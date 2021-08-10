@@ -61,6 +61,7 @@ function initRuntime(asm) {
   Module['_emscripten_tls_init'] = _emscripten_tls_init;
   Module['HEAPU32'] = HEAPU32;
   Module['__emscripten_thread_init'] = __emscripten_thread_init;
+  Module['__emscripten_thread_exit'] = __emscripten_thread_exit;
   Module['_pthread_self'] = _pthread_self;
 
   if (ENVIRONMENT_IS_PTHREAD) {
