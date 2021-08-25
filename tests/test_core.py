@@ -4595,8 +4595,9 @@ main main sees -524, -534, 72.
     # once we figure out how to do that.
     create_file('main.c', r'''
       #include <stdio.h>
+      #include <threads.h>
 
-      _Thread_local int foo = 10;
+      thread_local int foo = 10;
 
       void sidey();
 
@@ -4608,11 +4609,48 @@ main main sees -524, -534, 72.
     ''')
     create_file('side.c', r'''
       #include <stdio.h>
+      #include <threads.h>
 
-      _Thread_local int bar = 11;
+      thread_local int bar = 11;
 
       void sidey() {
         printf("side TLS: %d\n", bar);
+      }
+    ''')
+    self.emcc_args.append('-Wno-experimental')
+    self.dylink_testf('main.c', 'side.c',
+                      expected='main TLS: 10\nside TLS: 11\n',
+                      need_reverse=False)
+
+  @node_pthreads
+  @needs_dylink
+  def test_dylink_tls_export(self):
+    create_file('main.c', r'''
+      #include <threads.h>
+      #include <stdio.h>
+
+      thread_local int foo = 10;
+      extern thread_local int bar;
+
+      void sidey();
+
+      int main(int argc, char const *argv[]) {
+        printf("main: foo=%d\n", foo);
+        printf("main: bar=%d\n", bar);
+        sidey();
+        return 0;
+      }
+    ''')
+    create_file('side.c', r'''
+      #include <threads.h>
+      #include <stdio.h>
+
+      thread_local int bar = 11;
+      extern thread_local int foo;
+
+      void sidey() {
+        printf("side: foo=%d\n", foo);
+        printf("side: bar=%d\n", bar);
       }
     ''')
     self.emcc_args.append('-Wno-experimental')
